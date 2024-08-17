@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Servicio Nginx
+  nginx:
+    image: nginx:latest
+    container_name: sanamente_nginx
+    ports:
+      - "8082:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf # Asegúrate de montar el archivo de configuración aquí
+      - ./:/var/www/html
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - sanamente_network
+
+  # Servicio PHP-FPM
+  php:
+    image: summasolutions/php:8.2.3-fpm
+    ports:
+      - 9002
+    container_name: sanamente_php
+    volumes:
+      - ./:/var/www/html
+    expose:
+      - "9002"
+    networks:
+      - sanamente_network
+
+  # Servicio MySQL
+  mysql:
+    image: mariadb
+    container_name: sanamente_mysql
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpressuser
+      MYSQL_PASSWORD: wordpresspassword
+    ports:
+      - "3307:3306"
+    networks:
+      - sanamente_network
+
+volumes:
+  mysql_data:
+
+networks:
+  sanamente_network:
+    driver: bridge
